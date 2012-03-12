@@ -261,7 +261,9 @@ td.amount { white-space: nowrap; }
 {% endmacro %}
 
 {% macro receipt(Sale,parameters) %}
-{% if Sale.SaleLines %}
+
+<!-- grant edit begin: minimal cc agreement receipt macro -->
+{% if Sale.SaleLines and not parameters.force_cc_agree %}
 <table class="sale lines">
 	<thead>
 		<tr>
