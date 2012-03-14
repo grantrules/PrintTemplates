@@ -108,12 +108,14 @@ td.amount { white-space: nowrap; }
 {% for Sale in Sales %}
 
 {% if Sale.Shop.ReceiptSetup.creditcardAgree|strlen > 0 and not parameters.gift_receipt and not parameters.email %}
-	{% if parameters.force_cc_agree or parameters.print_workorder_agree %}
+	{% if parameters.force_cc_agree %}
+        {{ _self.signature_receipt(Sale,parameters) }}
+        {% elseif parameters.print_workorder_agree %}
         {{ _self.store_receipt(Sale,parameters) }}
 	{% else %}
 	    {% for SalePayment in Sale.SalePayments.SalePayment %}
         	{% if SalePayment.CCCharge %}
-                {{ _self.store_receipt(Sale,parameters) }}
+                {{ _self.signature_receipt(Sale,parameters) }}
         	{% endif %}
         {% endfor %}
     {% endif %}
@@ -261,9 +263,7 @@ td.amount { white-space: nowrap; }
 {% endmacro %}
 
 {% macro receipt(Sale,parameters) %}
-
-<!-- grant edit begin: minimal cc agreement receipt macro -->
-{% if Sale.SaleLines and not parameters.force_cc_agree %}
+{% if Sale.SaleLines %}
 <table class="sale lines">
 	<thead>
 		<tr>
@@ -581,4 +581,76 @@ td.amount { white-space: nowrap; }
 			</table>
 		{% endif %}
 	{% endif %}
+{% endmacro %}
+
+{% macro signature_receipt(Sale,parameters) %}
+<div class="receipt store">
+	<div class="header">
+		{{ _self.title(Sale,parameters) }}
+		<p class="copy">Store Copy</p>
+		{{ _self.date(Sale) }}
+	</div>
+{% if Sale.SaleLines %}
+
+
+
+{% if Sale.completed == 'true' and not parameters.gift_receipt %}
+	{% if Sale.SalePayments %}
+		<h2>Payments</h2>
+		<table class="payments">
+			{% for Payment in Sale.SalePayments.SalePayment %}
+					{% if Payment.PaymentType.name != 'Cash' and Payment.CreditAccount.giftCard != 'true' and Payment.creditAccountID == 0 %}
+						<!--  NOT Customer Account -->
+						<tr>
+							<td width="100%">
+								{{ Payment.PaymentType.name }}
+	
+								{% if Payment.ccChargeID > 0 %}
+									{% if Payment.CCCharge %}
+										<br>Card Num: {{Payment.CCCharge.xnum}}
+										{% if Payment.CCCharge.cardType|strlen > 0 %}
+											<br>Type: {%if Payment.CCCharge.isDebit %}Debit/{% endif %}{{Payment.CCCharge.cardType}}
+										{% endif %}
+										{% if Payment.CCCharge.cardholderName|strlen > 0 %}
+											<br>Cardholder: {{Payment.CCCharge.cardholderName}}
+										{% endif %}
+										{% if Payment.CCCharge.entryMethod|strlen > 0 %}
+											<br>Entry: {{Payment.CCCharge.entryMethod}}
+										{% endif %}
+										{% if Payment.CCCharge.authCode|strlen > 0 %}
+											<br>Approval: {{Payment.CCCharge.authCode}}
+										{% endif %}
+										{% if Payment.CCCharge.gatewayTransID|strlen > 0 %}
+											<br>ID: {{Payment.CCCharge.gatewayTransID}}
+										{% endif %}
+									{% endif %}
+								{% endif %}
+							</td>
+							<td class="amount">{{Payment.amount|money}}</td>
+						</tr>
+					
+					{% endif %}
+			{% endfor %}
+			<tr><td colspan="2"></td></tr>
+		</table>
+	{% endif %}
+	
+
+	
+
+
+{% endif %}
+
+
+
+{% endif %}
+
+	{{ _self.cc_agreement(Sale) }}
+	{{ _self.workorder_agreement(Sale) }}
+
+	<img height="50" width="250" class="barcode" src="/barcode.php?type=receipt&number={{Sale.ticketNumber}}">	
+
+	{{ _self.ship_to(Sale) }}
+</div>
+
 {% endmacro %}
