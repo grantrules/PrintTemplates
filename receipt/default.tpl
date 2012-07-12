@@ -584,23 +584,25 @@ td.amount { white-space: nowrap; }
 {% endmacro %}
 
 {% macro signature_receipt(Sale,parameters) %}
-<div class="receipt store">
+<div class="receipt store"> <!-- DOOP -->
 	<div class="header">
 		{{ _self.title(Sale,parameters) }}
 		<p class="copy">Store Copy</p>
 		{{ _self.date(Sale) }}
 	</div>
-{% if Sale.SaleLines %}
+<!-- { % if Sale.SaleLines % } -->
 
-
+<!-- BOOP -->
 
 {% if Sale.completed == 'true' and not parameters.gift_receipt %}
+<!-- BIP -->
 	{% if Sale.SalePayments %}
+<!-- WAP -->
 		<h2>Payments</h2>
 		<table class="payments">
 			{% for Payment in Sale.SalePayments.SalePayment %}
-					{% if Payment.PaymentType.name != 'Cash' and Payment.CreditAccount.giftCard != 'true' and Payment.creditAccountID == 0 %}
-						<!--  NOT Customer Account -->
+					{% if Payment.PaymentType.name != 'Cash' and Payment.CreditAccount.giftCard != 'true' %}
+						<!--  NOT Customer Account WOMP -->
 						<tr>
 							<td width="100%">
 								{{ Payment.PaymentType.name }}
@@ -643,7 +645,7 @@ td.amount { white-space: nowrap; }
 
 
 
-{% endif %}
+<!-- { % endif % } -->
 
 	{{ _self.cc_agreement(Sale) }}
 	{{ _self.workorder_agreement(Sale) }}
